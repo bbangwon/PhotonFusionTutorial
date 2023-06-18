@@ -136,6 +136,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
+  _prefabBall: {fileID: 1640940261746836138, guid: 9ba18e8fdfc349149adf07230cb54148, type: 3}
 --- !u!1 &822361441748265597
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,15 +1,20 @@
 using Fusion;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : NetworkBehaviour
 {
     private NetworkCharacterControllerPrototype _cc;
 
+    [SerializeField] private Ball _prefabBall;
+    private Vector3 _forward;
+
+    [Networked] private TickTimer delay { get; set; }
+
+
     private void Awake()
     {
         _cc = GetComponent<NetworkCharacterControllerPrototype>();
+        _forward = transform.forward;
     }
 
     //모든 시뮬레이션 틱에서 호출됨
@@ -22,6 +27,22 @@ public class Player : NetworkBehaviour
             //부정행위를 방지하기 위해 정규화 함
             data.direction.Normalize();
             _cc.Move(5 * data.direction * Runner.DeltaTime);
+
+            if(data.direction.sqrMagnitude > 0)
+                _forward = data.direction;
+
+            if(delay.ExpiredOrNotRunning(Runner))
+            {
+                delay = TickTimer.CreateFromSeconds(Runner, 0.5f);
+                if((data.buttons & NetworkInputData.MOUSEBUTTON1) != 0)
+                {
+                    Runner.Spawn(_prefabBall, transform.position + _forward, Quaternion.LookRotation(_forward),
+                        Object.InputAuthority, (runner, o) => {
+                            //Ball이 동기화 되기전 Init()함수 호출 필요
+                            o.GetComponent<Ball>().Init();
+                        });
+                }               
+            }
         }
     }
 }

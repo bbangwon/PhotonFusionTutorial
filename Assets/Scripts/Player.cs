@@ -1,5 +1,6 @@
 using Fusion;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : NetworkBehaviour
 {
@@ -15,6 +16,8 @@ public class Player : NetworkBehaviour
     public NetworkBool spawned { get; set; }
 
     private Material _material;
+    private Text _messages;
+
     Material material
     {
         get
@@ -82,5 +85,28 @@ public class Player : NetworkBehaviour
     public override void Render()
     {
         material.color = Color.Lerp(material.color, Color.blue, Time.deltaTime);
+    }
+
+    private void Update()
+    {
+        if(Object.HasInputAuthority && Input.GetKeyDown(KeyCode.R))
+        {
+            RPC_SendMessage("Hey Mate!");
+        }
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+    public void RPC_SendMessage(string message, RpcInfo info = default)
+    {
+        Debug.Log(info.Source);
+
+        if (_messages == null)
+            _messages = FindObjectOfType<Text>();        
+
+        if (info.Source == Runner.Simulation.LocalPlayer)
+            message = $"You said: {message}\n";
+        else
+            message = $"Some other player said: {message}\n";            
+        _messages.text += message;
     }
 }
